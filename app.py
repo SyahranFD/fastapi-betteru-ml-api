@@ -1,4 +1,4 @@
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, UploadFile, HTTPException
 from pydantic import BaseModel
 from PIL import Image
 import numpy as np
@@ -18,10 +18,8 @@ labels = [
 
 app = FastAPI()
 
-
 class PredictionResponse(BaseModel):
     prediction: str
-
 
 @app.post("/predict", response_model=PredictionResponse)
 async def predict(file: UploadFile = File(...)):
@@ -44,6 +42,146 @@ async def predict(file: UploadFile = File(...)):
     except Exception as e:
         return {"error": str(e)}
 
+# Model untuk input data nutrisi
+class NutritionRequest(BaseModel):
+    gender: str
+    age: int
+    weight: float
+    height: float
+    activity_level: str
+    goal: str
+
+# Model untuk output rekomendasi nutrisi
+class NutritionResponse(BaseModel):
+    profile: dict
+    daily_nutrition: dict
+
+class NutritionCalculator:
+    def __init__(self, gender, age, weight, height, activity_level, goal):
+        """
+        Inisialisasi kalkulator nutrisi dengan parameter individu
+
+        Parameters:
+        - gender: 'Laki Laki' atau 'Perempuan'
+        - age: umur dalam tahun
+        - weight: berat badan dalam kg
+        - height: tinggi badan dalam cm
+        - activity_level: tingkat aktivitas fisik
+        - goal: tujuan nutrisi
+        """
+        self.gender = gender
+        self.age = age
+        self.weight = weight
+        self.height = height
+        self.activity_level = activity_level
+        self.goal = goal
+
+        # Konstanta aktivitas
+        self.activity_factors = {
+            'sangat jarang olahraga': 1.2,
+            'jarang olahraga': 1.375,
+            'cukup olahraga': 1.55,
+            'sering olahraga': 1.725,
+            'sangat sering olahraga': 1.9
+        }
+
+        # Goal calorie adjustments
+        self.goal_calorie_adjustments = {
+            'menurunkan berat badan ekstrim': 0.6,
+            'menurunkan berat badan': 0.8,
+            'mempertahankan berat badan': 1.0,
+            'menaikkan berat badan': 1.15,
+            'menaikkan berat badan ekstrim': 1.25
+        }
+
+        if self.gender not in ['laki laki', 'perempuan']:
+            raise HTTPException(status_code=400, detail="Jenis kelamin tidak valid, contoh yang valid adalah 'laki laki' atau 'perempuan'")
+
+        if self.activity_level not in self.activity_factors:
+            raise HTTPException(status_code=400, detail="Tingkat aktivitas tidak valid, contoh yang valid adalah 'sangat jarang olahraga', 'jarang olahraga', 'cukup olahraga', 'sering olahraga', atau 'sangat sering olahraga'")
+
+        if self.goal not in self.goal_calorie_adjustments:
+            raise HTTPException(status_code=400, detail="Tujuan tidak valid, contoh yang valid adalah 'menurunkan berat badan ekstrim', 'menurunkan berat badan', 'mempertahankan berat badan', 'menaikkan berat badan', atau 'menaikkan berat badan ekstrim'")
+
+    def calculate_bmr(self):
+        """
+        Menghitung Basal Metabolic Rate (BMR) menggunakan
+        rumus Harris Benedict
+        """
+        if self.gender == 'laki laki':
+            bmr = 66 + (13.7 * self.weight) + (5 * self.height) - (6.8 * self.age)
+        else:
+            bmr = 655 + (9.6 * self.weight) + (1.8 * self.height) - (4.7 * self.age)
+
+        return bmr
+
+    def calculate_total_calories(self):
+        """
+        Menghitung total kalori harian
+        """
+        bmr = self.calculate_bmr()
+        activity_factor = self.activity_factors.get(self.activity_level)
+        goal_adjustment = self.goal_calorie_adjustments.get(self.goal)
+
+        return bmr * activity_factor * goal_adjustment
+
+    def calculate_macronutrients(self):
+        """
+        Menghitung kebutuhan makronutrien
+        """
+        total_calories = self.calculate_total_calories()
+
+        # Protein calculation (15% of total calories)
+        protein = 0.15 * total_calories / 4
+
+        # Fat calculation (15% of total calories)
+        fat = 0.15 * total_calories / 9
+
+        # Carb calculation (60% of total calories)
+        carb = 0.60 * total_calories / 4
+
+        return {
+            'Total Kalori': round(total_calories, 2),
+            'Protein': round(protein, 2),
+            'Lemak': round(fat, 2),
+            'Karbohidrat': round(carb, 2)
+        }
+
+    def get_nutrition_recommendation(self):
+        """
+        Mendapatkan rekomendasi nutrisi lengkap
+        """
+        macronutrients = self.calculate_macronutrients()
+
+        return {
+            'Profil': {
+                'Jenis Kelamin': self.gender,
+                'Umur': self.age,
+                'Berat Badan': self.weight,
+                'Tinggi Badan': self.height,
+                'Tingkat Aktivitas': self.activity_level,
+                'Tujuan': self.goal
+            },
+            'Kebutuhan Nutrisi Harian': macronutrients
+        }
+
+@app.post("/calculate-nutrition", response_model=NutritionResponse)
+async def calculate_nutrition(data: NutritionRequest):
+    calculator = NutritionCalculator(
+        gender=data.gender.lower(),
+        age=data.age,
+        weight=data.weight,
+        height=data.height,
+        activity_level=data.activity_level.lower(),
+        goal=data.goal.lower()
+    )
+
+    recommendation = calculator.get_nutrition_recommendation()
+
+    return NutritionResponse(
+        profile=recommendation['Profil'],
+        daily_nutrition=recommendation['Kebutuhan Nutrisi Harian']
+    )
 
 if __name__ == "__main__":
     import uvicorn
