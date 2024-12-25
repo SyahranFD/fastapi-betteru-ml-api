@@ -78,11 +78,11 @@ class NutritionCalculator:
 
         # Konstanta aktivitas
         self.activity_factors = {
-            'sangat jarang olahraga': 1.2,
-            'jarang olahraga': 1.375,
-            'cukup olahraga': 1.55,
-            'sering olahraga': 1.725,
-            'sangat sering olahraga': 1.9
+            'sangat jarang beraktivitas': 1.2,
+            'jarang beraktivitas': 1.375,
+            'cukup beraktivitas': 1.55,
+            'sering beraktivitas': 1.725,
+            'sangat sering beraktivitas': 1.9
         }
 
         # Goal calorie adjustments
@@ -98,7 +98,7 @@ class NutritionCalculator:
             raise HTTPException(status_code=400, detail="Jenis kelamin tidak valid, contoh yang valid adalah 'laki laki' atau 'perempuan'")
 
         if self.activity_level not in self.activity_factors:
-            raise HTTPException(status_code=400, detail="Tingkat aktivitas tidak valid, contoh yang valid adalah 'sangat jarang olahraga', 'jarang olahraga', 'cukup olahraga', 'sering olahraga', atau 'sangat sering olahraga'")
+            raise HTTPException(status_code=400, detail="Tingkat aktivitas tidak valid, contoh yang valid adalah 'sangat jarang beraktivitas', 'jarang beraktivitas', 'cukup beraktivitas', 'sering beraktivitas', atau 'sangat sering beraktivitas'")
 
         if self.goal not in self.goal_calorie_adjustments:
             raise HTTPException(status_code=400, detail="Tujuan tidak valid, contoh yang valid adalah 'menurunkan berat badan ekstrim', 'menurunkan berat badan', 'mempertahankan berat badan', 'menaikkan berat badan', atau 'menaikkan berat badan ekstrim'")
