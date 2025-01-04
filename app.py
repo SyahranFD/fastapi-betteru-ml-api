@@ -141,10 +141,10 @@ class NutritionCalculator:
         carb = 0.60 * total_calories / 4
 
         return {
-            'Total Kalori': round(total_calories, 2),
-            'Protein': round(protein, 2),
-            'Lemak': round(fat, 2),
-            'Karbohidrat': round(carb, 2)
+            'Total Kalori': int(total_calories),
+            'Protein': int(protein),
+            'Lemak': int(fat),
+            'Karbohidrat': int(carb)
         }
 
     def get_nutrition_recommendation(self):
