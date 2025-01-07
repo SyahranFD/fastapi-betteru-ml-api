@@ -12,8 +12,8 @@ model = tf.keras.models.load_model(model_path)
 # Define the class labels
 labels = [
     "ayam goreng", "burger", "french fries", "gado gado",
-    "ikan goreng", "mie goreng", "nasi goreng", "nasi padang",
-    "pizza", "rawon", "rendang", "sate", "soto"
+    "ikan goreng", "indomie goreng", "indomie goreng", "nasi padang",
+    "pizza", "rawon", "rendang", "sate", "soto", "indomie goreng"
 ]
 
 app = FastAPI()
