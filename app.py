@@ -6,13 +6,13 @@ import tensorflow as tf
 import io
 
 # Load the trained TensorFlow model
-model_path = 'model-food-indonesia.h5'  # Pastikan file model Anda ada di sini
+model_path = 'model-food-indonesia-act3.h5'  # Pastikan file model Anda ada di sini
 model = tf.keras.models.load_model(model_path)
 
 # Define the class labels
 labels = [
     "ayam goreng", "burger", "french fries", "gado gado",
-    "ikan goreng", "indomie goreng", "indomie goreng", "nasi padang",
+    "ikan goreng", "indomie goreng", "nasi goreng", "nasi padang",
     "pizza", "rawon", "rendang", "sate", "soto", "indomie goreng"
 ]
 
