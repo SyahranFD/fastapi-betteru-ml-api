@@ -21,6 +21,10 @@ app = FastAPI()
 class PredictionResponse(BaseModel):
     prediction: str
 
+@app.get("/")
+async def read_root():
+    return {"message": "Selamat datang di API Klasifikasi Makanan Indonesia"}
+
 @app.post("/predict", response_model=PredictionResponse)
 async def predict(file: UploadFile = File(...)):
     try:
