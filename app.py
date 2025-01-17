@@ -89,7 +89,7 @@ class NutritionCalculator:
         self.goal_calorie_adjustments = {
             'menurunkan berat badan ekstrim': 0.6,
             'menurunkan berat badan': 0.8,
-            'mempertahankan berat badan': 1.0,
+            'menjaga berat badan': 1.0,
             'menaikkan berat badan': 1.15,
             'menaikkan berat badan ekstrim': 1.25
         }
@@ -101,7 +101,7 @@ class NutritionCalculator:
             raise HTTPException(status_code=400, detail="Tingkat aktivitas tidak valid, contoh yang valid adalah 'sangat jarang beraktivitas', 'jarang beraktivitas', 'cukup beraktivitas', 'sering beraktivitas', atau 'sangat sering beraktivitas'")
 
         if self.goal not in self.goal_calorie_adjustments:
-            raise HTTPException(status_code=400, detail="Tujuan tidak valid, contoh yang valid adalah 'menurunkan berat badan ekstrim', 'menurunkan berat badan', 'mempertahankan berat badan', 'menaikkan berat badan', atau 'menaikkan berat badan ekstrim'")
+            raise HTTPException(status_code=400, detail="Tujuan tidak valid, contoh yang valid adalah 'menurunkan berat badan ekstrim', 'menurunkan berat badan', 'menjaga berat badan', 'menaikkan berat badan', atau 'menaikkan berat badan ekstrim'")
 
     def calculate_bmr(self):
         """
